@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Greek Lessons with Moira</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background-color: #2c2f33;
+            --container-bg: #36393f;
+            --text-color: #ffffff;
+            --accent-color: #8c6a4d;
+            --button-bg: #5a4b40;
+            --button-hover-bg: #8c6a4d;
+            --speaking-glow: #e0c8b6;
+            --recording-color: #e64747;
+            --image-border: #4a4e54;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: var(--container-bg);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid #4a4e54;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            margin: 0 0 10px 0;
+            font-weight: 700;
+            color: var(--text-color);
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: var(--accent-color);
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .lesson-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .image-section {
+            background-color: #2c2f33;
+            border-radius: 10px;
+            padding: 37px;
+            border: 2px solid var(--image-border);
+        }
+
+        .lesson-image {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            border-radius: 10px;
+            border: 3px solid var(--accent-color);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .lesson-image:hover {
+            transform: scale(1.02);
+        }
+
+        .image-caption {
+            text-align: center;
+            margin-top: 15px;
+            font-style: italic;
+            color: var(--accent-color);
+            font-size: 1.1em;
+        }
+
+        .interaction-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px auto;
+        }
+        
+        #avatar {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            border: 3px solid var(--accent-color);
+            /*border-radius: 50%;*/
+            transition: all 0.3s ease;
+        }
+
+        #avatar.speaking {
+            box-shadow: 0 0 20px 3px var(--speaking-glow);
+            transform: scale(1.05);
+        }
+        
+        .audio-waves {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 170px;
+            height: 170px;
+            pointer-events: none;
+        }
+        
+        .wave {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--speaking-glow);
+            border-radius: 50%;
+            opacity: 0;
+            animation: none;
+        }
+        
+        .speaking .wave {
+            animation: wave 2s ease-out infinite;
+        }
+        
+        .wave:nth-child(2) { animation-delay: 0.5s; }
+        .wave:nth-child(3) { animation-delay: 1s; }
+        
+        @keyframes wave {
+            0% {
+                transform: scale(0.5);
+                opacity: 0.8;
+            }
+            70% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        .name-tag {
+            background-color: #d3b89c;
+            color: #4a3f35;
+            padding: 8px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1em;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border: 2px solid #b89c7c;
+            display: inline-block;
+            margin: 0 auto;
+            margin-top:80px;
+        }
+
+        .question-box {
+            background-color: #2c2f33;
+            border: 2px solid var(--accent-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            line-height: 1.5;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .question-translation {
+            font-size: 1em;
+            color: var(--accent-color);
+            text-align: center;
+            font-style: italic;
+        }
+
+        #status-text {
+            font-size: 1.2em;
+            min-height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            transition: color 0.3s;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        #control-button {
+            background-color: var(--button-bg);
+            color: var(--text-color);
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            min-width: 250px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        #control-button:hover:not(:disabled) {
+            background-color: var(--button-hover-bg);
+            transform: translateY(-2px);
+        }
+
+        #control-button:disabled {
+            background-color: #4a4e54;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        #control-button.recording-active {
+            background-color: var(--recording-color);
+        }
+        
+        #control-button.recording-active:hover:not(:disabled) {
+            background-color: #f05555;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #4a4e54;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .lesson-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        .score {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .mic-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .feedback-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .feedback-success {
+            background-color: rgba(76, 175, 80, 0.2);
+            border: 2px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .feedback-error {
+            background-color: rgba(244, 67, 54, 0.2);
+            border: 2px solid var(--error-color);
+            color: var(--error-color);
+        }
+
+        @media (max-width: 768px) {
+            .lesson-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .app-container {
+                padding: 20px;
+            }
+            
+            header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Visual Greek Lessons</h1>
+            <p class="subtitle">Learn Greek through images with Moira.AI</p>
+        </header>
+        
+        <div class="lesson-info">
+            <span>Lesson: <span id="lesson-number">1</span> of <span id="total-lessons">5</span></span>
+            <span class="score">Score: <span id="score">0</span>/<span id="total-score">0</span></span>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div class="lesson-container">
+            <div class="image-section">
+                <img id="lesson-image" class="lesson-image" src="https://www.buildtwin.com/assets/images/public.png" alt="Lesson Image">
+                <div class="image-caption" id="image-caption">Click "Start Lesson" to begin your visual Greek journey!</div>
+            </div>
+
+            <div class="interaction-section">
+                <div class="avatar-container">
+                    <img id="avatar" src="https://i.postimg.cc/pX8Ncg6K/Moira-teacher.png" alt="Avatar of Moira the teacher">
+                    <div class="audio-waves">
+                        <div class="wave"></div>
+                        <div class="wave"></div>
+                        <div class="wave"></div>
+                    </div>
+                </div>
+                <div class="name-tag">Moira.AI</div>
+                
+                <div class="question-box" id="question-box" style="display: none;">
+                    <div class="question-text" id="question-text"></div>
+                    <div class="question-translation" id="question-translation"></div>
+                </div>
+                
+                <div id="feedback-message" class="feedback-message" style="display: none;"></div>
+                
+                <p id="status-text">Ready to start your visual Greek lesson?</p>
+                
+                <div class="controls">
+                    <button id="control-button">Start Lesson</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const avatar = document.getElementById('avatar');
+        const statusText = document.getElementById('status-text');
+        const controlButton = document.getElementById('control-button');
+        const lessonImage = document.getElementById('lesson-image');
+        const imageCaption = document.getElementById('image-caption');
+        const questionBox = document.getElementById('question-box');
+        const questionText = document.getElementById('question-text');
+        const questionTranslation = document.getElementById('question-translation');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const lessonNumber = document.getElementById('lesson-number');
+        const totalLessons = document.getElementById('total-lessons');
+        const score = document.getElementById('score');
+        const totalScore = document.getElementById('total-score');
+        const progressFill = document.getElementById('progress-fill');
+
+        // --- State Variables ---
+        let appState = 'idle'; // idle, playing, listening, evaluating
+        let currentLessonIndex = 0;
+        let currentScore = 0;
+        let totalQuestions = 0;
+        let sessionId = Math.random().toString(36).substring(2, 15);
+        let mediaStream = null; // Store the microphone stream here
+
+        // --- Lesson Data ---
+        const lessons = [
+            {
+                image: "https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                caption: "A book",
+                question: "Τι αντικειμενο βλέπεις σε αυτή την εικόνα;",
+                translation: "What do you see in this image?",
+                expectedAnswer: "Βιβλio",
+                hints: ["Think about an object you can read...", "It is used in education..."]
+            },
+            {
+                image: "https://images.unsplash.com/photo-1577028300036-aa112c18d109?q=80&w=1935&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                caption: "Fresh apples",
+                question: "Τι χρώμα έχουν αυτά τα μήλα;",
+                translation: "What color are these apples?",
+                expectedAnswer: "Πρασινα",
+                hints: ["Look at the color", "It's the color of grass"]
+            },
+            {
+                image: "https://images.unsplash.com/photo-1415604934674-561df9abf539?w=500&h=400&fit=crop",
+                caption: "A simple clock",
+                question: "Πως λεγεται το αντικειμενο;",
+                translation: "What object is this?",
+                expectedAnswer: "Ρολόι",
+                hints: ["It's a common item", "It can tell the time..."]
+            },
+            {
+                image: "https://plus.unsplash.com/premium_photo-1666286163385-abe05f0326c4?q=80&w=1075&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                caption: "Blue ocean water",
+                question: "Τι χρώμα έχει το νερό;",
+                translation: "What color is the water?",
+                expectedAnswer: "μπλε",
+                hints: ["Look at the ocean", "It's the color of the sky"]
+            },
+            {
+                image: "https://images.unsplash.com/photo-1599600197870-4bfaf17d5f42?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                caption: "Bright yellow sun",
+                question: "Tι βλεπεις σε αυτην την φωτογραφια;",
+                translation: "What do you see in the sky?",
+                expectedAnswer: "Ηλιοβασίλεμα",
+                hints: ["Just before dark", "It's bright and yellow and orange and involves the sun.."]
+            }
+        ];
+
+        // --- Utility Functions ---
+        function updateProgress() {
+            const progress = (currentLessonIndex / lessons.length) * 100;
+            progressFill.style.width = progress + '%';
+            lessonNumber.textContent = currentLessonIndex + 1;
+            totalLessons.textContent = lessons.length;
+            score.textContent = currentScore;
+            totalScore.textContent = totalQuestions;
+        }
+
+        function showFeedback(message, isSuccess) {
+            feedbackMessage.textContent = message;
+            feedbackMessage.className = `feedback-message ${isSuccess ? 'feedback-success' : 'feedback-error'}`;
+            feedbackMessage.style.display = 'block';
+            setTimeout(() => {
+                feedbackMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        function playAudioFromBase64(base64Audio, onEnd) {
+            appState = 'playing';
+            avatar.classList.add('speaking');
+            const audio = new Audio('data:audio/mpeg;base64,' + base64Audio);
+            audio.onended = () => {
+                appState = 'idle';
+                avatar.classList.remove('speaking');
+                if (onEnd) onEnd();
+            };
+            audio.onerror = () => {
+                appState = 'idle';
+                avatar.classList.remove('speaking');
+                statusText.textContent = 'Audio playback error.';
+                if (onEnd) onEnd();
+            };
+            audio.play();
+        }
+
+        function recordUserAudio(durationSec, onComplete) {
+            if (!mediaStream) {
+                alert("Microphone access not granted or not available. Please allow access and refresh the page.");
+                appState = 'idle';
+                statusText.textContent = 'Microphone not available.';
+                controlButton.disabled = false;
+                controlButton.textContent = 'Record Answer';
+                return;
+            }
+            
+            appState = 'listening';
+            statusText.textContent = 'Recording your answer...';
+            controlButton.textContent = 'Recording...';
+            controlButton.classList.add('recording-active');
+            controlButton.disabled = true;
+            
+            const recorder = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' });
+            let chunks = [];
+            
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                controlButton.classList.remove('recording-active');
+                // No need to stop tracks here, as the stream is managed by requestMicrophonePermission
+                const blob = new Blob(chunks, { type: 'audio/webm' });
+                onComplete(blob);
+            };
+            
+            recorder.start();
+            setTimeout(() => {
+                if (recorder.state !== 'inactive') recorder.stop();
+            }, durationSec * 1000);
+        }
+
+        async function sendAudioToApi(blob, questionText, onDone) {
+            appState = 'evaluating';
+            statusText.textContent = 'Evaluating your answer...';
+            controlButton.textContent = 'Processing...';
+            controlButton.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', blob, 'answer.webm');
+            formData.append('session_id', sessionId);
+            formData.append('question_text', questionText);
+
+            // Add the image URL for the current lesson
+            const currentLesson = lessons[currentLessonIndex];
+            formData.append('image_url', currentLesson.image);
+
+            try {
+                const resp = await fetch('https://moira0teacher0gos0demo0backend.share.zrok.io/v1/ai_teacher_with_image', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json',
+                        'skip_zrok_interstitial': 'true'
+                    },
+                    credentials: 'omit'
+                });
+                
+                const data = await resp.json();
+                if (data && data.Audio) {
+                    totalQuestions++;
+                    if (data.MoiraAI.toLowerCase().includes('σωστά') || data.MoiraAI.toLowerCase().includes('μπράβο')) {
+                        currentScore++;
+                        showFeedback('Correct! Well done!', true);
+                    } else {
+                        showFeedback('Try again! You can do it!', false);
+                    }
+                    
+                    updateProgress();
+                    playAudioFromBase64(data.Audio, onDone);
+                } else {
+                    appState = 'idle';
+                    statusText.textContent = 'API error. Please try again.';
+                    controlButton.disabled = false;
+                    controlButton.textContent = 'Try Again';
+                    if (onDone) onDone();
+                }
+            } catch (e) {
+                appState = 'idle';
+                statusText.textContent = 'Connection error. Please try again.';
+                controlButton.disabled = false;
+                controlButton.textContent = 'Try Again';
+                if (onDone) onDone();
+            }
+        }
+
+        function loadCurrentLesson() {
+            if (currentLessonIndex >= lessons.length) {
+                // Lesson complete
+                statusText.textContent = 'Congratulations! You completed all lessons!';
+                controlButton.textContent = 'Lesson Complete!';
+                controlButton.disabled = true;
+                questionBox.style.display = 'none';
+                imageCaption.textContent = `Final Score: ${currentScore}/${totalQuestions}`;
+                return;
+            }
+            
+            const lesson = lessons[currentLessonIndex];
+            lessonImage.src = lesson.image;
+            imageCaption.textContent = lesson.caption;
+            questionText.textContent = lesson.question;
+            questionTranslation.textContent = lesson.translation;
+            questionBox.style.display = 'block';
+            
+            statusText.textContent = 'Look at the image and answer the question.';
+            controlButton.textContent = 'Record Answer';
+            controlButton.disabled = false;
+            
+            updateProgress();
+        }
+
+        function startLesson() {
+            currentLessonIndex = 0;
+            currentScore = 0;
+            totalQuestions = 0;
+            updateProgress();
+            loadCurrentLesson();
+        }
+
+        function nextLesson() {
+            currentLessonIndex++;
+            loadCurrentLesson();
+        }
+
+        // --- Event Listeners ---
+        controlButton.addEventListener('click', () => {
+            const buttonText = controlButton.textContent;
+            
+            if (buttonText.includes('Start Lesson')) {
+                startLesson();
+            } else if (buttonText.includes('Record Answer') || buttonText.includes('Try Again')) {
+                const currentLesson = lessons[currentLessonIndex];
+                recordUserAudio(5, (blob) => {
+                    sendAudioToApi(blob, currentLesson.question, () => {
+                        setTimeout(() => {
+                            if (currentLessonIndex < lessons.length - 1) {
+                                controlButton.textContent = 'Next Lesson';
+                                controlButton.disabled = false;
+                            } else {
+                                nextLesson(); // This will trigger completion
+                            }
+                        }, 1000);
+                    });
+                });
+            } else if (buttonText.includes('Next Lesson')) {
+                nextLesson();
+            }
+        });
+
+        // Initialize
+        updateProgress();
+
+        // New function to request microphone permission on page load
+        async function requestMicrophonePermission() {
+            if (mediaStream) return; // Already have the stream
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaStream = stream; // Store the stream for future use
+                console.log("Microphone permission granted.");
+            } catch (err) {
+                console.error("Microphone access denied on page load:", err);
+                alert("Microphone access is required for this lesson. Please allow access and refresh the page.");
+                // Optionally disable recording features if permission is denied
+                controlButton.disabled = true;
+                controlButton.textContent = 'Microphone Denied';
+            }
+        }
+
+        // Call the function to request permission immediately on page load
+        requestMicrophonePermission();
+    </script>
+</body>
+</html>
